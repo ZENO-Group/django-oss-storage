@@ -197,9 +197,13 @@ class OssStorage(Storage):
         logger().debug("files: %s", files)
         return dirs, files
 
-    def url(self, name, expire=60*60*24*365*10, **kwargs):
+    def url(self, name):
         key = self._get_key_name(name)
-        return self.bucket.sign_url('GET', key, expire, **kwargs)
+        if hasattr(settings, "OSS_BUCKET_CDN"):
+            endpoint = getattr(settings, "OSS_BUCKET_CDN")
+            return urljoin(endpoint, key)
+        scheme, endpoint = endpoint.split('//')
+        return urljoin(scheme + '//' + self.bucket_name + '.' + endpoint, key)
 
     def delete(self, name):
         name = self._get_key_name(name)
