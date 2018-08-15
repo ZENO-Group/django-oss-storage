@@ -208,7 +208,7 @@ class OssStorage(Storage):
         if hasattr(settings, "OSS_BUCKET_CDN"):
             endpoint = getattr(settings, "OSS_BUCKET_CDN")
             return urljoin(endpoint, key)
-        scheme, endpoint = endpoint.split('//')
+        scheme, endpoint = self.end_point.split('//')
         return urljoin(scheme + '//' + self.bucket_name + '.' + endpoint, key)
 
     def delete(self, name):
