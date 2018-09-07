@@ -57,11 +57,12 @@ class OssStorage(Storage):
     Aliyun OSS Storage
     """
 
-    def __init__(self, access_key_id=None, access_key_secret=None, end_point=None, bucket_name=None):
+    def __init__(self, access_key_id=None, access_key_secret=None, end_point=None, bucket_name=None, bucket_cdn=None):
         self.access_key_id = access_key_id if access_key_id else _get_config('OSS_ACCESS_KEY_ID')
         self.access_key_secret = access_key_secret if access_key_secret else _get_config('OSS_ACCESS_KEY_SECRET')
         self.end_point = _normalize_endpoint(end_point if end_point else _get_config('OSS_ENDPOINT'))
         self.bucket_name = bucket_name if bucket_name else _get_config('OSS_BUCKET_NAME')
+        self.bucket_cdn = bucket_cdn if bucket_cdn else _get_config('OSS_BUCKET_CDN')
 
         self.auth = Auth(self.access_key_id, self.access_key_secret)
         self.service = Service(self.auth, self.end_point)
@@ -205,8 +206,8 @@ class OssStorage(Storage):
 
     def url(self, name):
         key = self._get_key_name(name)
-        if hasattr(settings, "OSS_BUCKET_CDN"):
-            endpoint = getattr(settings, "OSS_BUCKET_CDN")
+        if hasattr(self, "bucket_cdn") and self.bucket_cdn:
+            endpoint = self.bucket_cdn
             return urljoin(endpoint, key)
         scheme, endpoint = self.end_point.split('//')
         return urljoin(scheme + '//' + self.bucket_name + '.' + endpoint, key)
