@@ -121,12 +121,13 @@ class OssStorage(Storage):
         except:
             raise OssError("Failed to open %s" % name)
 
-    def _save(self, name, content):
-        file_name, ext = os.path.splitext(name)
-        if ext:
-            name = "%s_%s%s" % (file_name, time.time(), ext)
-        else:
-            name = "%s_%s" % (file_name, time.time())
+    def _save(self, name, content, add_timestamp=True):
+        if add_timestamp:
+            file_name, ext = os.path.splitext(name)
+            if ext:
+                name = "%s_%s%s" % (file_name, time.time(), ext)
+            else:
+                name = "%s_%s" % (file_name, time.time())
         target_name = self._get_key_name(name)
         logger().debug("target name: %s", target_name)
         logger().debug("content: %s", content)
@@ -239,8 +240,8 @@ class OssMediaStorage(OssStorage):
         logger().debug("locatin: %s", self.location)
         super(OssMediaStorage, self).__init__()
 
-    def save(self, name, content, max_length=None):
-        return super(OssMediaStorage, self)._save(name, content)
+    def save(self, name, content, max_length=None, add_timestamp=True):
+        return super(OssMediaStorage, self)._save(name, content, add_timestamp)
 
 
 class OssStaticStorage(OssStorage):
@@ -249,8 +250,8 @@ class OssStaticStorage(OssStorage):
         logger().info("locatin: %s", self.location)
         super(OssStaticStorage, self).__init__()
 
-    def save(self, name, content, max_length=None):
-        return super(OssStaticStorage, self)._save(name, content)
+    def save(self, name, content, max_length=None, add_timestamp=True):
+        return super(OssStaticStorage, self)._save(name, content, add_timestamp)
 
 class OssFile(File):
     """
