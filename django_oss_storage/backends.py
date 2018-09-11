@@ -63,16 +63,25 @@ class OssStorage(Storage):
         self.end_point = _normalize_endpoint(end_point if end_point else _get_config('OSS_ENDPOINT'))
         self.bucket_name = bucket_name if bucket_name else _get_config('OSS_BUCKET_NAME')
         self.bucket_cdn = bucket_cdn if bucket_cdn else _get_config('OSS_BUCKET_CDN')
+        self.connected = False
 
-        self.auth = Auth(self.access_key_id, self.access_key_secret)
-        self.service = Service(self.auth, self.end_point)
-        self.bucket = Bucket(self.auth, self.end_point, self.bucket_name)
 
-        # try to get bucket acl to check bucket exist or not
-        try:
-            self.bucket.get_bucket_acl().acl
-        except oss2.exceptions.NoSuchBucket:
-            raise SuspiciousOperation("Bucket '%s' does not exist." % self.bucket_name)
+    @property
+    def bucket(self):
+        if self.connected:
+            return self._bucket
+        else:
+            self.auth = Auth(self.access_key_id, self.access_key_secret)
+            self.service = Service(self.auth, self.end_point)
+            self._bucket = Bucket(self.auth, self.end_point, self.bucket_name)
+
+            # try to get bucket acl to check bucket exist or not
+            try:
+                self.bucket.get_bucket_acl().acl
+            except oss2.exceptions.NoSuchBucket:
+                raise SuspiciousOperation("Bucket '%s' does not exist." % self.bucket_name)
+            self.connected = True
+            return self._bucket
 
     def _get_key_name(self, name):
         """
