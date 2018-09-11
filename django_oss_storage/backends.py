@@ -77,7 +77,7 @@ class OssStorage(Storage):
 
             # try to get bucket acl to check bucket exist or not
             try:
-                self.bucket.get_bucket_acl().acl
+                self._bucket.get_bucket_acl().acl
             except oss2.exceptions.NoSuchBucket:
                 raise SuspiciousOperation("Bucket '%s' does not exist." % self.bucket_name)
             self.connected = True
