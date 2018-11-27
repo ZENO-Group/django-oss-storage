@@ -4,6 +4,7 @@ import os
 import six
 import shutil
 import time
+import uuid
 
 try:
     from urllib.parse import urljoin
@@ -124,9 +125,9 @@ class OssStorage(Storage):
     def _save(self, name, content):
         file_name, ext = os.path.splitext(name)
         if ext:
-            name = "%s_%s%s" % (file_name, time.time(), ext)
+            name = "%s_%s%s" % (file_name, uuid.uuid4().hex, ext)
         else:
-            name = "%s_%s" % (file_name, time.time())
+            name = "%s_%s" % (file_name, uuid.uuid4().hex)
         target_name = self._get_key_name(name)
         logger().debug("target name: %s", target_name)
         logger().debug("content: %s", content)
@@ -251,6 +252,12 @@ class OssStaticStorage(OssStorage):
 
     def save(self, name, content, max_length=None):
         return super(OssStaticStorage, self)._save(name, content)
+
+    def _save(self, name, content):
+        target_name = self._get_key_name(name)
+        self.bucket.put_object(target_name, content)
+        return os.path.normpath(name)
+
 
 class OssFile(File):
     """
