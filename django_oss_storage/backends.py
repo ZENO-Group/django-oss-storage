@@ -124,10 +124,12 @@ class OssStorage(Storage):
 
     def _save(self, name, content):
         file_name, ext = os.path.splitext(name)
+        path, tail = os.path.split(name)
         if ext:
             name = "%s%s" % (uuid.uuid4().hex, ext)
         else:
             name = "%s" % (uuid.uuid4().hex)
+        name = os.path.join(path, name)
         target_name = self._get_key_name(name)
         logger().debug("target name: %s", target_name)
         self.bucket.put_object(target_name, content)
